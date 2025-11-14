@@ -1,0 +1,10 @@
+/* @import "tailwindcss"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Optional: keep only what you really need globally */
+body {
+  @apply bg-white text-gray-900 font-sans;
+}

@@ -1,0 +1,841 @@
+basePath: /
+definitions:
+  dto.AdminCreateUserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      role:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role
+    type: object
+  dto.AdminUpdateUserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      role:
+        type: string
+    type: object
+  dto.GlobalResponse:
+    properties:
+      data: {}
+      errors: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.InventoryCreateRequest:
+    properties:
+      item_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      price_per_item:
+        type: number
+      quantity:
+        minimum: 0
+        type: integer
+    required:
+    - item_name
+    - price_per_item
+    - quantity
+    type: object
+  dto.InventorySummaryResponse:
+    properties:
+      as_of:
+        type: string
+      average_item_value:
+        type: number
+      total_available_qty:
+        type: integer
+      total_items:
+        type: integer
+      total_stock_value:
+        type: number
+    type: object
+  dto.InventoryUpdateRequest:
+    properties:
+      item_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      price_per_item:
+        type: number
+      quantity:
+        minimum: 0
+        type: integer
+    type: object
+  dto.LowStockItemDetails:
+    properties:
+      available_qty:
+        type: integer
+      item_name:
+        type: string
+    type: object
+  dto.LowStockItemsResponse:
+    properties:
+      low_stock_items:
+        items:
+          $ref: '#/definitions/dto.LowStockItemDetails'
+        type: array
+      threshold:
+        type: integer
+    type: object
+  dto.MonthlyRevenueGrowthResponse:
+    properties:
+      burn_rate:
+        type: number
+      growth_percent:
+        type: number
+      month:
+        type: string
+      previous_revenue:
+        type: number
+      runway_months:
+        type: number
+      target:
+        type: number
+      target_achieved:
+        type: boolean
+      top_selling_items:
+        items:
+          $ref: '#/definitions/dto.TopSellingItemResponse'
+        type: array
+      total_revenue:
+        type: number
+      year:
+        type: integer
+    type: object
+  dto.SalesTrendRow:
+    properties:
+      period:
+        type: string
+      revenue:
+        type: number
+      units_sold:
+        type: integer
+    type: object
+  dto.SalesTrendsResponse:
+    properties:
+      interval:
+        type: string
+      trends:
+        items:
+          $ref: '#/definitions/dto.SalesTrendRow'
+        type: array
+    type: object
+  dto.SignInRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 64
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.SignupRequest:
+    properties:
+      email:
+        maxLength: 100
+        type: string
+      first_name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      last_name:
+        maxLength: 50
+        minLength: 1
+        type: string
+      password:
+        maxLength: 64
+        minLength: 8
+        type: string
+    required:
+    - email
+    - first_name
+    - password
+    type: object
+  dto.TopSellingItemResponse:
+    properties:
+      item_name:
+        type: string
+      revenue:
+        type: number
+      total_sold:
+        type: integer
+    type: object
+  dto.TransactionCreateRequest:
+    properties:
+      item_id:
+        type: string
+      performed_by:
+        maxLength: 100
+        minLength: 2
+        type: string
+      quantity:
+        type: integer
+      recipient:
+        maxLength: 100
+        minLength: 2
+        type: string
+      type:
+        enum:
+        - sold
+        - given
+        - added
+        type: string
+    required:
+    - item_id
+    - performed_by
+    - quantity
+    - recipient
+    - type
+    type: object
+  dto.TransactionUpdateRequest:
+    properties:
+      performed_by:
+        maxLength: 100
+        minLength: 2
+        type: string
+      quantity:
+        type: integer
+      recipient:
+        maxLength: 100
+        minLength: 2
+        type: string
+      type:
+        enum:
+        - sold
+        - given
+        - added
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  description: Simple inventory and transactions API
+  title: Inventory Management API
+  version: "1.0"
+paths:
+  /analytics/inventory/low-stock:
+    get:
+      description: Retrieve a list of items that are below a specified stock threshold.
+      parameters:
+      - description: 'Stock quantity threshold (default: system-defined)'
+        in: query
+        name: threshold
+        type: integer
+      - description: Maximum number of items to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Low stock items retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.GlobalResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LowStockItemsResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Low Stock Items
+      tags:
+      - Analytics
+  /analytics/inventory/summary:
+    get:
+      description: Retrieve a summary of inventory statistics, including total items,
+        total stock value, and average item value.
+      parameters:
+      - description: As of date (YYYY-MM-DD)
+        in: query
+        name: as_of
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory summary retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.GlobalResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventorySummaryResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Inventory Summary
+      tags:
+      - Analytics
+  /analytics/revenue/growth:
+    get:
+      description: Retrieve monthly revenue growth details including growth percentage,
+        target achievement, burn rate, and top-selling items.
+      parameters:
+      - description: Month number (1-12)
+        in: query
+        name: month
+        required: true
+        type: integer
+      - description: Year (e.g., 2025)
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Revenue growth target percentage
+        format: float64
+        in: query
+        name: target
+        type: number
+      - description: Monthly burn rate amount
+        format: float64
+        in: query
+        name: burn_rate
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Revenue growth data retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.GlobalResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MonthlyRevenueGrowthResponse'
+              type: object
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Monthly Revenue Growth
+      tags:
+      - Analytics
+  /analytics/sales/trends:
+    get:
+      description: Retrieve sales trends for a given date range and interval (daily,
+        weekly, or monthly).
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: Time interval (daily|weekly|monthly)
+        in: query
+        name: interval
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sales trends retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.GlobalResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesTrendsResponse'
+              type: object
+        "400":
+          description: Invalid parameters or date format
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Sales Trends
+      tags:
+      - Analytics
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user credentials and return a JWT token
+      parameters:
+      - description: SignIn Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      summary: Login an existing user
+      tags:
+      - Auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with the provided details
+      parameters:
+      - description: Signup Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      summary: Register a new user
+      tags:
+      - Auth
+  /inventories:
+    get:
+      description: Retrieve a list of all inventory items from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all inventories
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all inventory items
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      description: Add a new inventory record to the system
+      parameters:
+      - description: Inventory Create Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.InventoryCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Inventory created successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new inventory item
+      tags:
+      - Inventory
+  /inventories/{id}:
+    delete:
+      description: Remove an inventory record by its ID
+      parameters:
+      - description: Inventory ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory deleted successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "404":
+          description: Inventory not found
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an inventory item
+      tags:
+      - Inventory
+    get:
+      description: Retrieve details of a specific inventory item by its ID
+      parameters:
+      - description: Inventory ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory details
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "404":
+          description: Inventory not found
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get one inventory item by ID
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing inventory item by its ID
+      parameters:
+      - description: Inventory ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Inventory Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.InventoryUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inventory updated successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing inventory item
+      tags:
+      - Inventory
+  /transactions:
+    get:
+      description: Retrieve a list of all transactions from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all transactions
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all transactions
+      tags:
+      - Transaction
+    post:
+      consumes:
+      - application/json
+      description: Add a new transaction record to the system
+      parameters:
+      - description: Transaction Create Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransactionCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Transaction created successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new transaction
+      tags:
+      - Transaction
+  /transactions/{id}:
+    get:
+      description: Retrieve details of a specific transaction by its ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction details
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "404":
+          description: Transaction not found
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get one transaction by ID
+      tags:
+      - Transaction
+    put:
+      consumes:
+      - application/json
+      description: Update details of an existing transaction by its ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Transaction Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransactionUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction updated successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing transaction
+      tags:
+      - Transaction
+  /users:
+    get:
+      description: Retrieve a list of all registered users (Admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users fetched successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Failed to fetch users
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Allows admin to create a new user (staff account)
+      parameters:
+      - description: Create User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdminCreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Failed to create user
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new staff account
+      tags:
+      - Admin
+  /users/{id}:
+    get:
+      description: Retrieve user details by ID (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User fetched successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      description: Update a user's role or active status (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AdminUpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+        "500":
+          description: Failed to update user
+          schema:
+            $ref: '#/definitions/dto.GlobalResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user details
+      tags:
+      - Admin
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
