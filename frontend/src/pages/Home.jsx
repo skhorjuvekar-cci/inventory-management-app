@@ -150,7 +150,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-teal-800">Sai Island Inventory</h1>
+              <h1 className="text-3xl font-bold text-teal-800"> Inventory</h1>
               <p className="text-sm text-teal-600 mt-1">Goa Business Manager</p>
             </div>
             <div className="text-right">
@@ -420,8 +420,8 @@ const HomePage = () => {
       <footer className="bg-white border-t border-teal-100 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-gray-600">© 2025 Sai Island Business Manager. All rights reserved.</p>
-            <p className="text-sm text-gray-600 mt-2 md:mt-0">Contact: support@saiisland.com | +91-XXXX-XXXXXX</p>
+            <p className="text-sm text-gray-600">© 2025  Business Manager. All rights reserved.</p>
+            <p className="text-sm text-gray-600 mt-2 md:mt-0">Contact: support@.com | +91-XXXX-XXXXXX</p>
           </div>
         </div>
       </footer>

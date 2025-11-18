@@ -1,27 +1,31 @@
-import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/layoutComponents/Sidebar';
-import Footer from '../components/layoutComponents/Footer';
-import TrackerContextProvider from '../context/tracker-context';
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/layout/Sidebar";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 
-function MainLayout() {
+export default function MainLayout() {
   return (
-    <TrackerContextProvider>
-      <div className="flex h-screen">
+    <div className="flex min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50">
 
-        <aside className="w-64 bg-gray-800">
-          <Sidebar />
-        </aside>
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-lg hidden md:block">
+        <Sidebar />
+      </aside>
 
+      {/* Main area */}
+      <div className="flex-1 flex flex-col">
 
-        <div className="flex-1 flex flex-col bg-secondary">
-          <main className="flex-1 overflow-y-auto">
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
+        {/* Header */}
+        <Header />
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
-    </TrackerContextProvider>
+    </div>
   );
 }
-
-export default MainLayout;
